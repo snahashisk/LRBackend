@@ -15,4 +15,5 @@ export const config = {
   REDIS_PASSWORD: process.env.REDIS_PASSWORD,
   REDIS_DB: process.env.REDIS_DB,
   REDIS_URL: process.env.REDIS_URL,
+  PORT: process.env.PORT,
 };
