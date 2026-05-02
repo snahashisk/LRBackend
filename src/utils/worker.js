@@ -3,7 +3,6 @@ import { redisConnection } from "./redis.js";
 import { uploadOnCloudinary } from "./cloudinary.js";
 import { User } from "../models/user.model.js";
 import { mailSender } from "./mailSender.js";
-import fs from "fs";
 
 export const startAvatarWorker = () => {
   const worker = new Worker(

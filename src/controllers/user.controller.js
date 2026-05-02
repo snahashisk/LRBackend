@@ -41,6 +41,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   let avatarLocalPath = "";
   if (req.file) {
+    console.log(req.file);
     avatarLocalPath = req.file.path;
   }
 
@@ -58,7 +59,7 @@ const registerUser = asyncHandler(async (req, res) => {
         userId: user._id,
         avatarLocalPath,
         email: user.email,
-        otp: otp,
+        otp,
       },
       {
         attempts: 3,
