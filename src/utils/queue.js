@@ -1,0 +1,6 @@
+import { Queue } from "bullmq";
+import { redisConnection } from "./redis.js";
+
+export const avatarQueue = new Queue("avatar-upload", {
+  connection: redisConnection,
+});
