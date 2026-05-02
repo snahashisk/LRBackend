@@ -12,13 +12,12 @@ const uploadOnCloudinary = async (localFilePath) => {
     if (!localFilePath) return null;
     const response = await cloudinary.uploader.upload(localFilePath, {
       resource_type: "auto",
-      transformation: [{ width: 300, height: 300, crop: "fill", gravity: "face" }],
     });
     fs.unlinkSync(localFilePath);
     return response;
   } catch (error) {
     console.error("Cloudinary upload error:", error);
-    fs.unlinkSync(localFilePath);
+    // Don't delete the file on failure so BullMQ can retry!
     return null;
   }
 };

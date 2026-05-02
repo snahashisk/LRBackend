@@ -1,11 +1,22 @@
 import { Router } from "express";
-import { getMe, loginUser, refreshAccessToken, registerUser } from "../controllers/user.controller.js";
+import {
+  getMe,
+  loginUser,
+  refreshAccessToken,
+  registerUser,
+  verifyUserOtp,
+  resendOtp,
+} from "../controllers/user.controller.js";
 import { verifyAccessToken, verifyRefreshToken } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
 const authRouter = Router();
 
 authRouter.route("/register").post(upload.single("avatar"), registerUser);
+
+authRouter.route("/verify-otp").post(verifyUserOtp);
+
+authRouter.route("/resend-otp").post(resendOtp);
 
 authRouter.route("/login").post(loginUser);
 

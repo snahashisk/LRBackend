@@ -3,6 +3,7 @@ import { redisConnection } from "./redis.js";
 import { uploadOnCloudinary } from "./cloudinary.js";
 import { User } from "../models/user.model.js";
 import { mailSender } from "./mailSender.js";
+import { otpEmailTemplate } from "../contants.js";
 
 export const startAvatarWorker = () => {
   const worker = new Worker(
@@ -40,6 +41,31 @@ export const startAvatarWorker = () => {
       `;
 
       await mailSender({ to: email, subject: "Profile Picture Updated", html: message });
+    },
+    { connection: redisConnection, concurrency: 2 },
+  );
+
+  worker.on("completed", (job) => {
+    console.log("Worker completed", job.id);
+  });
+
+  worker.on("failed", (job, err) => {
+    console.log("Worker failed:", err.message);
+  });
+
+  return worker;
+};
+
+export const startOtpEmailWorker = () => {
+  const worker = new Worker(
+    "otp-email-send",
+    async (job) => {
+      console.log("Job received:", job.data);
+      const { email, otp } = job.data;
+
+      const message = otpEmailTemplate(otp, email);
+
+      await mailSender({ to: email, subject: "OTP for Your Account", html: message });
     },
     { connection: redisConnection, concurrency: 2 },
   );
