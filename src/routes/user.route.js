@@ -6,6 +6,7 @@ import {
   registerUser,
   verifyUserOtp,
   resendOtp,
+  logoutUser,
 } from "../controllers/user.controller.js";
 import { verifyAccessToken, verifyRefreshToken } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";
@@ -23,5 +24,7 @@ authRouter.route("/login").post(loginUser);
 authRouter.route("/me").get(verifyAccessToken, getMe);
 
 authRouter.route("/refresh-token").get(verifyRefreshToken, refreshAccessToken);
+
+authRouter.route("/logout").post(verifyAccessToken, logoutUser);
 
 export default authRouter;

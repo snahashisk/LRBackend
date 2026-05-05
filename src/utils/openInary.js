@@ -13,7 +13,7 @@ export const uploadToOpeninary = async (localFilePath) => {
     // EXACTLY like Postman
     form.append("files", fs.createReadStream(localFilePath));
     form.append("folder", "doitnowavatar");
-    form.append("transformations", "w_300,h_300,c_fill");
+    form.append("transformations", "w_300,h_300,c_fill,g_face");
 
     const response = await axios.post("https://openinary.kanrarmcbackend.sbs/api/upload", form, {
       headers: {

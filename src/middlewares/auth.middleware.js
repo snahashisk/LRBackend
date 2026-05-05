@@ -4,16 +4,11 @@ import jwt from "jsonwebtoken";
 import { User } from "../models/user.model.js";
 import { config } from "../../configs/config.js";
 import bcrypt from "bcrypt";
-import { avatarQueue } from "../utils/queue.js";
 
 export const verifyAccessToken = asyncHandler(async (req, res, next) => {
   try {
-    await avatarQueue.add("upload-avatar", {
-      userId: "123",
-      filePath: "/path/to/file",
-    });
-
-    const token = req.header("Authorization")?.split(" ")[1];
+    const token = req.cookies?.accessToken;
+    // const token = req.header("Authorization")?.split(" ")[1];
 
     if (!token) throw new ApiError(401, "Unauthorized request");
 

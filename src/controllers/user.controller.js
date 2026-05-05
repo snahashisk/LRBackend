@@ -100,8 +100,16 @@ const loginUser = asyncHandler(async (req, res) => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
   };
 
+  const accessTokenOptions = {
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+    maxAge: 1 * 60 * 60 * 1000,
+  };
+
   return res
     .status(200)
+    .cookie("accessToken", accessToken, accessTokenOptions)
     .cookie("refreshToken", refreshToken, options)
     .json(new ApiResponse(200, { user: loggedInUser, accessToken }, "User logged in successfully"));
 });
@@ -121,7 +129,7 @@ const verifyUserOtp = asyncHandler(async (req, res) => {
       isVerified: true,
       $unset: { otp: "", otpExpiry: "" },
     },
-    { new: true },
+    { returnDocument: "after" },
   ).select("-password -refreshToken");
 
   return res.status(200).json(new ApiResponse(200, { user: updatedUser }, "OTP Verified successfully"));
@@ -173,4 +181,13 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, { user: loggedInUser, accessToken }, "Access Token Refreshed Successfully"));
 });
 
-export { registerUser, loginUser, getMe, refreshAccessToken, verifyUserOtp, resendOtp };
+const logoutUser = asyncHandler(async (req, res) => {
+  await User.findByIdAndUpdate(req.user._id, { $unset: { refreshToken: "" } }, { returnDocument: "after" });
+  return res
+    .status(200)
+    .clearCookie("accessToken")
+    .clearCookie("refreshToken")
+    .json(new ApiResponse(200, {}, "User logged out successfully"));
+});
+
+export { registerUser, loginUser, getMe, refreshAccessToken, verifyUserOtp, resendOtp, logoutUser };
