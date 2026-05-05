@@ -15,5 +15,10 @@ export const config = {
   REDIS_PASSWORD: process.env.REDIS_PASSWORD,
   REDIS_DB: process.env.REDIS_DB,
   REDIS_URL: process.env.REDIS_URL,
-  PORT: process.env.PORT,
+  BUCKET_ACCESS_KEY: process.env.BUCKET_ACCESS_KEY,
+  BUCKET_SECRET_KEY: process.env.BUCKET_SECRET_KEY,
+  BUCKET_NAME: process.env.BUCKET_NAME,
+  BUCKET_ENDPOINT: process.env.BUCKET_ENDPOINT,
+  OPENINARY_API: process.env.OPENINARY_API,
+  OPENINARY_BASE_URL: process.env.OPENINARY_BASE_URL,
 };

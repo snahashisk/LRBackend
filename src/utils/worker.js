@@ -1,9 +1,14 @@
 import { Worker } from "bullmq";
 import { redisConnection } from "./redis.js";
 import { uploadOnCloudinary } from "./cloudinary.js";
+import { uploadToOpeninary } from "./openInary.js";
 import { User } from "../models/user.model.js";
 import { mailSender } from "./mailSender.js";
 import { otpEmailTemplate } from "../contants.js";
+import fs from "fs";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { s3Client } from "../utils/connectBucket.js";
+import { config } from "../../configs/config.js";
 
 export const startAvatarWorker = () => {
   const worker = new Worker(
@@ -17,13 +22,35 @@ export const startAvatarWorker = () => {
         throw new Error(`User with ID ${userId} not found`);
       }
 
-      const cloudinaryResponse = await uploadOnCloudinary(avatarLocalPath);
+      const fileBuffer = fs.readFileSync(avatarLocalPath);
+      const key = `avatar/${userId}${Date.now()}.jpeg`;
 
-      if (!cloudinaryResponse?.url) {
-        throw new Error("Failed to upload to Cloudinary");
+      const uploadParams = {
+        Bucket: config.BUCKET_NAME,
+        Key: key,
+        Body: fileBuffer,
+        ContentType: "image/jpeg",
+      };
+
+      await s3Client.send(new PutObjectCommand(uploadParams));
+      console.log("File uploaded to S3 bucket successfully");
+
+      //trying upload on openinary
+      const openinaryResponse = await uploadToOpeninary(avatarLocalPath);
+      if (!openinaryResponse) {
+        throw new Error("Failed to upload to Openinary");
       }
 
-      user.avatar = cloudinaryResponse.url;
+      //trying upload on openinary
+      // const cloudinaryResponse = await uploadOnCloudinary(avatarLocalPath);
+      // if (!cloudinaryResponse?.url) {
+      //   throw new Error("Failed to upload to Cloudinary");
+      // }
+
+      //upload to s3 bucket
+
+      const avatarUrl = config.OPENINARY_BASE_URL + openinaryResponse;
+      user.avatar = avatarUrl;
       await user.save({ validateBeforeSave: false });
 
       const message = `
@@ -32,7 +59,7 @@ export const startAvatarWorker = () => {
         <p>Hello,</p>
         <p>fullName : ${user.fullName}</p>
         <p>Email : ${user.email}</p>
-        <img src="${cloudinaryResponse.url}" alt="Profile Picture">
+        <img src="${avatarUrl}" alt="Profile Picture">
         <p>OTP : ${otp}</p>
         <p>Your profile picture has been successfully uploaded to the server.</p>
         <p>Thank you for updating your information.</p>
