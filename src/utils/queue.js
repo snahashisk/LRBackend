@@ -8,3 +8,7 @@ export const avatarQueue = new Queue("avatar-upload", {
 export const otpEmailQueue = new Queue("otp-email-send", {
   connection: redisConnection,
 });
+
+export const pdfQueue = new Queue("pdf-upload", {
+  connection: redisConnection,
+});

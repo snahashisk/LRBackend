@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import connectDB from "./db/index.js";
 import { app } from "./app.js";
-import { startAvatarWorker, startOtpEmailWorker } from "./utils/worker.js";
+import { startAvatarWorker, startOtpEmailWorker, startPdfWorker } from "./utils/worker.js";
 
 dotenv.config();
 
@@ -10,6 +10,7 @@ const PORT = process.env.PORT || 8000;
 // Initialize background workers
 startAvatarWorker();
 startOtpEmailWorker();
+startPdfWorker();
 
 connectDB()
   .then(() => {

@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { config } from "../configs/config.js";
+import { errorHandler } from "./utils/errorHandler.js";
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(cookieParser());
 import healthCheckRouter from "./routes/health.route.js";
 import authRouter from "./routes/user.route.js";
 import topicRouter from "./routes/topic.route.js";
+import pdfRouter from "./routes/pdf.route.js";
 
 //Routes declaration
 app.use("/api/v1/healthcheck", healthCheckRouter);
@@ -25,5 +27,9 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/topic", topicRouter);
 
 //PDF router
+app.use("/api/v1/pdf", pdfRouter);
+
+// Error handler
+app.use(errorHandler);
 
 export { app };

@@ -9,6 +9,8 @@ import fs from "fs";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { s3Client } from "../utils/connectBucket.js";
 import { config } from "../../configs/config.js";
+import { PDF } from "../models/pdf.model.js";
+import { getPresignedUrl } from "./getPresignedUrl.js";
 
 export const startAvatarWorker = () => {
   const worker = new Worker(
@@ -93,6 +95,51 @@ export const startOtpEmailWorker = () => {
       const message = otpEmailTemplate(otp, email);
 
       await mailSender({ to: email, subject: "OTP for Your Account", html: message });
+    },
+    { connection: redisConnection, concurrency: 2 },
+  );
+
+  worker.on("completed", (job) => {
+    console.log("Worker completed", job.id);
+  });
+
+  worker.on("failed", (job, err) => {
+    console.log("Worker failed:", err.message);
+  });
+
+  return worker;
+};
+
+export const startPdfWorker = () => {
+  const worker = new Worker(
+    "pdf-upload",
+    async (job) => {
+      console.log("Job received:", job.data);
+      const { pdfLocalPath } = job.data;
+
+      const fileBuffer = fs.readFileSync(pdfLocalPath);
+      const key = `pdfstorage/${job.id}${Date.now()}.pdf`;
+
+      const uploadParams = {
+        Bucket: config.BUCKET_NAME,
+        Key: key,
+        Body: fileBuffer,
+        ContentType: "application/pdf",
+      };
+
+      await s3Client.send(new PutObjectCommand(uploadParams));
+
+      fs.unlinkSync(pdfLocalPath);
+      const pdf = await PDF.findById(job.data.pdfId);
+      if (!pdf) {
+        throw new Error(`PDF with ID ${job.data.pdfId} not found`);
+      }
+
+      pdf.file = key;
+      await pdf.save({ validateBeforeSave: false });
+
+      const url = await getPresignedUrl(key);
+      console.log("File uploaded to S3 bucket successfully");
     },
     { connection: redisConnection, concurrency: 2 },
   );

@@ -16,9 +16,18 @@ const pdfSchema = new Schema(
       type: String,
       required: true,
     },
-    description: {
+    title: {
       type: String,
       required: true,
+    },
+    description: {
+      type: String,
+      default: "",
+      required: false,
+    },
+    notes: {
+      type: String,
+      default: "<p>This is where you write your notes...</p>",
     },
     isFavorite: {
       type: Boolean,

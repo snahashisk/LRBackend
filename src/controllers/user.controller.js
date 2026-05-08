@@ -27,7 +27,7 @@ export function generateOtp() {
 }
 
 const registerUser = asyncHandler(async (req, res) => {
-  const { fullName, email, password, education, profession, avatar } = req.body;
+  const { fullName, email, password, education, profession } = req.body;
 
   if (!fullName || !email || !password || !education || !profession) {
     throw new ApiError(400, "All fields are required");
@@ -47,7 +47,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   const otp = generateOtp();
   const hashedOtp = await bcrypt.hash(otp, 10);
-  const otpExpiry = Date.now() + 1 * 60 * 1000; // 1 min from now
+  const otpExpiry = Date.now() + 5 * 60 * 1000; // 1 min from now
 
   const user = await User.create({ fullName, email, password, education, profession, otp: hashedOtp, otpExpiry });
   const createdUser = await User.findById(user._id).select("-password");
@@ -95,21 +95,13 @@ const loginUser = asyncHandler(async (req, res) => {
 
   const options = {
     httpOnly: true,
-    secure: true,
-    sameSite: "strict",
+    secure: false,
+    sameSite: "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000,
-  };
-
-  const accessTokenOptions = {
-    httpOnly: true,
-    secure: true,
-    sameSite: "strict",
-    maxAge: 1 * 60 * 60 * 1000,
   };
 
   return res
     .status(200)
-    .cookie("accessToken", accessToken, accessTokenOptions)
     .cookie("refreshToken", refreshToken, options)
     .json(new ApiResponse(200, { user: loggedInUser, accessToken }, "User logged in successfully"));
 });
@@ -147,7 +139,7 @@ const resendOtp = asyncHandler(async (req, res) => {
 
   const otp = generateOtp();
   const hashedOtp = await bcrypt.hash(otp, 10);
-  const otpExpiry = Date.now() + 1 * 60 * 1000; // 1 min from now
+  const otpExpiry = Date.now() + 5 * 60 * 1000; // 1 min from now
 
   user.otp = hashedOtp;
   user.otpExpiry = otpExpiry;
@@ -170,8 +162,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
   const options = {
     httpOnly: true,
-    secure: true,
-    sameSite: "strict",
+    secure: false,
+    sameSite: "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   };
 
@@ -185,7 +177,6 @@ const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(req.user._id, { $unset: { refreshToken: "" } }, { returnDocument: "after" });
   return res
     .status(200)
-    .clearCookie("accessToken")
     .clearCookie("refreshToken")
     .json(new ApiResponse(200, {}, "User logged out successfully"));
 });

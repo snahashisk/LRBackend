@@ -7,8 +7,7 @@ import bcrypt from "bcrypt";
 
 export const verifyAccessToken = asyncHandler(async (req, res, next) => {
   try {
-    const token = req.cookies?.accessToken;
-    // const token = req.header("Authorization")?.split(" ")[1];
+    const token = req.header("Authorization")?.split(" ")[1];
 
     if (!token) throw new ApiError(401, "Unauthorized request");
 
@@ -35,12 +34,14 @@ export const verifyRefreshToken = asyncHandler(async (req, res, next) => {
     const user = await User.findById(decodedToken._id);
     if (!user) throw new ApiError(401, "Invalid Access Token");
 
-    const isTokenMatched = bcrypt.compare(token, user.refreshToken);
+    if (!user.refreshToken) throw new ApiError(401, "Refresh token expired or used");
+
+    const isTokenMatched = await bcrypt.compare(token, user.refreshToken);
     if (!isTokenMatched) throw new ApiError(401, "Invalid Refresh Token");
 
     req.user = user;
     next();
   } catch (error) {
-    throw new ApiError(500, "Something went wrong while verifying refresh token");
+    throw new ApiError(401, error?.message || "Invalid refresh token");
   }
 });

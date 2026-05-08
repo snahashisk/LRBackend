@@ -7,7 +7,6 @@ import { Topic } from "../models/topic.model.js";
 const createTopic = asyncHandler(async (req, res) => {
   const { title, description } = req.body;
   const owner = req.user._id;
-  console.log(owner);
 
   const user = await User.findById(owner);
   if (!user) throw new ApiError(404, "User not found");
@@ -28,7 +27,6 @@ const getAllTopics = asyncHandler(async (req, res) => {
 });
 
 const getTopic = asyncHandler(async (req, res) => {
-  console.log(req.user._id);
   const topic = await Topic.findById(req.params.id);
   return res.status(200).json(new ApiResponse(200, topic, "Topic fetched successfully"));
 });
