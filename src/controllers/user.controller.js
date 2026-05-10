@@ -42,7 +42,6 @@ const registerUser = asyncHandler(async (req, res) => {
   let avatarLocalPath = "";
   if (req.file) {
     avatarLocalPath = req.file.path;
-    console.log(avatarLocalPath, "localPath");
   }
 
   const otp = generateOtp();
